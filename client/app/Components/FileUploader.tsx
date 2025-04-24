@@ -5,7 +5,14 @@ import { cn } from "@/lib/utils";
 import React, { useRef, useState } from "react";
 
 type FileStatus = "idle" | "uploading" | "success" | "error";
-import { FileText, Upload, X, CheckCircle, AlertCircle, ArrowRight } from "lucide-react"
+import {
+  FileText,
+  Upload,
+  X,
+  CheckCircle,
+  AlertCircle,
+  ArrowRight,
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 
@@ -13,11 +20,11 @@ const FileUploader: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [status, setStatus] = useState<FileStatus>("idle");
-  const [file, setFile] = useState<File | null>(null)
-  
-  const [progress, setProgress] = useState(0)
-  const [isHovering, setIsHovering] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [file, setFile] = useState<File | null>(null);
+
+  const [progress, setProgress] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [particles, setParticles] = useState<
     {
@@ -31,54 +38,79 @@ const FileUploader: React.FC = () => {
   >([]);
 
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
+    e.preventDefault();
+    setIsDragging(true);
+  };
 
   const handleDragLeave = () => {
-    setIsDragging(false)
-  }
+    setIsDragging(false);
+  };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
+    e.preventDefault();
+    setIsDragging(false);
 
-    const droppedFile = e.dataTransfer.files[0]
+    const droppedFile = e.dataTransfer.files[0];
     if (droppedFile && droppedFile.type === "application/pdf") {
-      handleFileSelect(droppedFile)
+      handleFileSelect(droppedFile);
     } else {
-      console.log("invalid file type!")
+      console.log("invalid file type!");
     }
-  }
+  };
 
-  const handleFileSelect = (selectedFile: File) => {
-    setFile(selectedFile)
-    setStatus("idle")
-  }
-  console.log(file)
+  const handleFileSelect = async (selectedFile: File) => {
+    setFile(selectedFile);
+    setStatus("idle");
+
+    const formData = new FormData();
+    formData.append("pdf", selectedFile);
+
+    try {
+      await fetch("http://localhost:8000/upload/pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      console.log("upload successfully");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  // console.log(file)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      handleFileSelect(e.target.files[0])
+      handleFileSelect(e.target.files[0]);
     }
-  }
+  };
 
   const handleUpload = async () => {
-    if (!file) return
+    console.log("file uploading");
+    if (!file) return;
 
-    setStatus("uploading")
-  }
+    if (file) {
+      const formData = new FormData();
+      formData.append("pdf", file);
+
+      await fetch("http://localhost:8000/upload/pdf", {
+        method: "POST",
+        body: formData,
+      });
+      console.log("file uploaded");
+    }
+
+    setStatus("uploading");
+  };
 
   const removeFile = () => {
-    console.log("removing file")
-    setFile(null)
-    setStatus("idle")
-    setProgress(0)
+    console.log("removing file");
+    setFile(null);
+    setStatus("idle");
+    setProgress(0);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+      fileInputRef.current.value = "";
     }
-  }
-
+  };
 
   return (
     <div className="w-full max-w-md mx-auto" ref={containerRef}>
@@ -106,11 +138,11 @@ const FileUploader: React.FC = () => {
             status === "success" ? "bg-green-900/20" : "",
             status === "error" ? "bg-red-900/20" : ""
           )}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
         >
           {/* Glow effect */}
           <div
@@ -142,20 +174,20 @@ const FileUploader: React.FC = () => {
             />
           ))}
 
-{!file ? (
+          {!file ? (
             <div className="flex flex-col items-center justify-center py-8">
               <div
                 className={cn(
                   "mb-6 rounded-full p-4 transition-all duration-300",
                   "bg-gradient-to-br from-purple-500/20 to-blue-500/20",
                   "shadow-[0_0_15px_rgba(124,58,237,0.3)]",
-                  isHovering && "shadow-[0_0_25px_rgba(124,58,237,0.5)]",
+                  isHovering && "shadow-[0_0_25px_rgba(124,58,237,0.5)]"
                 )}
               >
                 <Upload
                   className={cn(
                     "h-8 w-8 transition-all duration-300",
-                    "text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400",
+                    "text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400"
                   )}
                 />
               </div>
@@ -170,7 +202,7 @@ const FileUploader: React.FC = () => {
                 className={cn(
                   "relative overflow-hidden group transition-all duration-300",
                   "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500",
-                  "border-none text-white font-medium py-2 px-6",
+                  "border-none text-white font-medium py-2 px-6"
                 )}
               >
                 <span className="relative z-10 flex items-center gap-2">
@@ -195,24 +227,37 @@ const FileUploader: React.FC = () => {
                     className={cn(
                       "rounded-full p-3 transition-all duration-300",
                       "bg-gradient-to-br from-purple-500/20 to-blue-500/20",
-                      "shadow-[0_0_10px_rgba(124,58,237,0.2)]",
+                      "shadow-[0_0_10px_rgba(124,58,237,0.2)]"
                     )}
                   >
                     <FileText className="h-6 w-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400" />
                   </div>
                   <div className="overflow-hidden">
-                    <p className="truncate font-medium text-gray-200">{file.name}</p>
-                    <p className="text-xs text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p className="truncate font-medium text-gray-200">
+                      {file.name}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
                   </div>
                 </div>
                 <button
                   onClick={removeFile}
-                  className={cn("rounded-full p-2 transition-all duration-300", "hover:bg-gray-700/50 group z-30")}
+                  className={cn(
+                    "rounded-full p-2 transition-all duration-300",
+                    "hover:bg-gray-700/50 group z-30"
+                  )}
                 >
                   <X className="h-5 w-5 text-gray-400 group-hover:text-gray-200" />
                   <span className="sr-only">Remove file</span>
                 </button>
               </div>
+              <button
+                onClick={handleUpload}
+                className="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-200 shadow-md"
+              >
+                Upload
+              </button>
 
               {status === "uploading" && (
                 <div className="space-y-3 py-2">
@@ -223,7 +268,9 @@ const FileUploader: React.FC = () => {
                     />
                     <div className="absolute inset-0 rounded-full opacity-30 bg-[length:200%_100%] bg-gradient-to-r from-transparent via-white to-transparent animate-shimmer"></div>
                   </div>
-                  <p className="text-xs text-center text-gray-400">Uploading... {progress}%</p>
+                  <p className="text-xs text-center text-gray-400">
+                    Uploading... {progress}%
+                  </p>
                 </div>
               )}
 
@@ -257,7 +304,6 @@ const FileUploader: React.FC = () => {
               </div>
             </div>
           )}
-
         </div>
       </div>
 
